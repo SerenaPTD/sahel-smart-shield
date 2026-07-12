@@ -1,1 +1,539 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSS-Lite — Schéma de câblage</title>
+<style>
+  :root {
+    --navy:  #0B1F35;
+    --teal:  #1A7F96;
+    --gold:  #C8922E;
+    --done:  #1E9B6B;
+    --warn:  #D04A28;
+    --bg:    #F2F6F8;
+    --card:  #FFFFFF;
+    --ink:   #1C2B38;
+    --sub:   #5A7080;
+    --line:  #DCE8EE;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+         background: var(--bg); color: var(--ink); }
 
+  .header {
+    background: var(--navy); padding: 32px 40px; border-bottom: 3px solid var(--teal);
+  }
+  .header h1 { font-size: 22px; font-weight: 800; color: #fff; }
+  .header h1 span { color: #5DC8E0; }
+  .header p { margin-top: 6px; font-size: 13px; color: rgba(255,255,255,.5); }
+
+  .body { max-width: 1020px; margin: 0 auto; padding: 36px 32px 64px; }
+
+  /* ── section ──────────────────────────────────── */
+  .section { margin-bottom: 40px; }
+  .section-title {
+    font-size: 13px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .7px; color: var(--teal);
+    padding-bottom: 10px; border-bottom: 2px solid var(--teal);
+    margin-bottom: 20px;
+  }
+
+  /* ── esp32 block diagram ──────────────────────── */
+  .diagram { display: flex; gap: 0; align-items: stretch; margin-bottom: 32px; }
+  .col-left  { display: flex; flex-direction: column; justify-content: space-around; gap: 4px; }
+  .col-right { display: flex; flex-direction: column; justify-content: space-around; gap: 4px; }
+  .col-mid { flex: 1; display: flex; align-items: stretch; padding: 0 20px; }
+  .esp32-box {
+    flex: 1; background: var(--navy); border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px 16px; gap: 6px;
+  }
+  .esp32-box .chip-label { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 1px; }
+  .esp32-box .chip-sub   { font-size: 11px; color: rgba(255,255,255,.4); }
+  .pin-row {
+    display: flex; align-items: center; gap: 0;
+    height: 36px;
+  }
+  .pin-row.left  { flex-direction: row; }
+  .pin-row.right { flex-direction: row-reverse; }
+  .pin-label {
+    font-size: 11px; font-weight: 700; color: var(--ink);
+    padding: 3px 8px; background: white; border-radius: 4px;
+    border: 1.5px solid var(--line); white-space: nowrap;
+    min-width: 90px; text-align: center;
+  }
+  .pin-wire {
+    width: 28px; height: 2px;
+    background: repeating-linear-gradient(90deg, var(--teal) 0, var(--teal) 4px, transparent 4px, transparent 8px);
+  }
+  .pin-gpio {
+    font-size: 10px; font-weight: 800; color: var(--teal);
+    padding: 3px 7px; background: rgba(26,127,150,.1);
+    border-radius: 4px; border: 1.5px solid rgba(26,127,150,.3);
+    white-space: nowrap;
+  }
+  .pin-gpio.pwr  { color: #C0392B; background: rgba(192,57,43,.08); border-color: rgba(192,57,43,.25); }
+  .pin-gpio.gnd  { color: #333; background: #F0F0F0; border-color: #C0C0C0; }
+  .pin-gpio.i2c  { color: #6B3FA0; background: rgba(107,63,160,.08); border-color: rgba(107,63,160,.25); }
+  .pin-gpio.uart { color: #1E6B9B; background: rgba(30,107,155,.08); border-color: rgba(30,107,155,.25); }
+  .pin-gpio.relay{ color: var(--done); background: rgba(30,155,107,.08); border-color: rgba(30,155,107,.25); }
+  .pin-gpio.adc  { color: var(--gold); background: rgba(200,146,46,.08); border-color: rgba(200,146,46,.25); }
+  .pin-space { display: flex; align-items: center; gap: 0; height: 36px; }
+
+  /* ── big table ─────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--navy); }
+  thead th { padding: 11px 14px; color: #fff; font-size: 11px; font-weight: 700;
+             text-transform: uppercase; letter-spacing: .5px; text-align: left; }
+  tbody tr:nth-child(even) { background: #F8FAFB; }
+  tbody tr:hover { background: rgba(26,127,150,.05); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .gpio-badge {
+    display: inline-block; padding: 2px 9px; border-radius: 5px;
+    font-size: 11px; font-weight: 800; font-family: monospace;
+  }
+  .gpio-badge.gpio  { background: rgba(26,127,150,.12); color: var(--teal); }
+  .gpio-badge.pwr3  { background: rgba(192,57,43,.1); color: #C0392B; }
+  .gpio-badge.pwr5  { background: rgba(200,90,20,.1); color: #C85010; }
+  .gpio-badge.gnd   { background: #EAEAEA; color: #444; }
+  .gpio-badge.i2c   { background: rgba(107,63,160,.1); color: #6B3FA0; }
+  .gpio-badge.uart  { background: rgba(30,107,155,.1); color: #1E6B9B; }
+  .gpio-badge.relay { background: rgba(30,155,107,.1); color: var(--done); }
+  .gpio-badge.adc   { background: rgba(200,146,46,.1); color: var(--gold); }
+  .warn-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; background: rgba(208,74,40,.1);
+    color: var(--warn); margin-left: 6px;
+  }
+  .note-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; background: rgba(26,127,150,.1);
+    color: var(--teal); margin-left: 6px;
+  }
+  td.name { font-weight: 700; color: var(--ink); }
+  td.desc { color: var(--sub); font-size: 12px; }
+
+  /* ── alert boxes ──────────────────────────────── */
+  .alerts { display: flex; flex-direction: column; gap: 12px; }
+  .alert {
+    padding: 14px 18px; border-radius: 10px; border-left: 4px solid;
+    font-size: 13px; line-height: 1.6;
+  }
+  .alert.danger { background: rgba(208,74,40,.07); border-color: var(--warn); }
+  .alert.info   { background: rgba(26,127,150,.07); border-color: var(--teal); }
+  .alert.tip    { background: rgba(30,155,107,.07); border-color: var(--done); }
+  .alert strong { font-weight: 800; display: block; margin-bottom: 3px; }
+
+  /* ── power diagram ────────────────────────────── */
+  .power-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .power-card {
+    background: white; border-radius: 10px; border: 1.5px solid var(--line);
+    padding: 16px 18px;
+  }
+  .power-card .pwr-title { font-size: 11px; font-weight: 800; color: var(--sub);
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+  .power-card .pwr-volt { font-size: 22px; font-weight: 900; line-height: 1; margin-bottom: 6px; }
+  .power-card .pwr-src  { font-size: 12px; color: var(--sub); margin-bottom: 10px; }
+  .power-card ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .power-card li { font-size: 12px; color: var(--ink); }
+  .power-card li::before { content: "→ "; color: var(--teal); font-weight: 700; }
+
+  /* ── resistors ──────────────────────────────────── */
+  .pull-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .pull-table th { background: #F0F4F6; padding: 10px 14px; text-align: left;
+    font-size: 11px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing:.4px; }
+  .pull-table td { padding: 10px 14px; border-bottom: 1px solid var(--line); }
+
+  footer { text-align: center; padding: 24px; font-size: 12px; color: var(--sub);
+    border-top: 1px solid var(--line); margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>SAHEL SMART SHIELD — <span>SSS-Lite</span></h1>
+  <p>Schéma de câblage complet — ESP32 DevKit v1 — Toutes les connexions pin par pin</p>
+</div>
+
+<div class="body">
+
+  <!-- ══ 1. SCHÉMA BLOC ══ -->
+  <div class="section">
+    <div class="section-title">1. Vue d'ensemble des connexions</div>
+    <div class="diagram">
+      <!-- LEFT: capteurs -->
+      <div class="col-left">
+        <div class="pin-row left">
+          <div class="pin-label">SHT31 (T°+Hum)</div>
+          <div class="pin-wire"></div>
+        </div>
+        <div class="pin-row left">
+          <div class="pin-label">INA219 (Batterie)</div>
+          <div class="pin-wire"></div>
+        </div>
+        <div class="pin-row left">
+          <div class="pin-label">DS18B20 (T°ext)</div>
+          <div class="pin-wire"></div>
+        </div>
+        <div class="pin-row left">
+          <div class="pin-label">ZMPT101B (230V)</div>
+          <div class="pin-wire"></div>
+        </div>
+      </div>
+
+      <!-- MID: ESP32 -->
+      <div class="col-mid">
+        <div class="esp32-box">
+          <div class="chip-label">ESP32</div>
+          <div class="chip-sub">DevKit v1</div>
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px;align-items:center">
+            <span style="font-size:10px;color:rgba(255,255,255,.3)">GPIO21 — SDA</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.3)">GPIO22 — SCL</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.3)">GPIO4  — 1-Wire</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.3)">GPIO34 — ADC</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.3)">GPIO16 — RX</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.3)">GPIO17 — TX</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.3)">GPIO25/26/27 — Relais</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: sorties -->
+      <div class="col-right">
+        <div class="pin-row right">
+          <div class="pin-label">Relais 1 — Ventilation</div>
+          <div class="pin-wire"></div>
+        </div>
+        <div class="pin-row right">
+          <div class="pin-label">Relais 2 — Délestage</div>
+          <div class="pin-wire"></div>
+        </div>
+        <div class="pin-row right">
+          <div class="pin-label">Relais 3 — Bascule</div>
+          <div class="pin-wire"></div>
+        </div>
+        <div class="pin-row right">
+          <div class="pin-label">SIM800L — SMS</div>
+          <div class="pin-wire"></div>
+        </div>
+        <div class="pin-row right">
+          <div class="pin-label">Raspberry Pi 4</div>
+          <div class="pin-wire" style="background: repeating-linear-gradient(90deg,#888 0,#888 4px,transparent 4px,transparent 8px)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 2. TABLE DES CONNEXIONS ══ -->
+  <div class="section">
+    <div class="section-title">2. Table des connexions GPIO — pin par pin</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Composant</th>
+          <th>Broche composant</th>
+          <th>Broche ESP32</th>
+          <th>Protocole</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- SHT31 -->
+        <tr>
+          <td class="name" rowspan="4">SHT31<br><small style="font-weight:400;color:#888">T° + Humidité interne</small></td>
+          <td>VCC</td>
+          <td><span class="gpio-badge pwr3">3.3V</span></td>
+          <td></td>
+          <td class="desc">Alimentation directe depuis broche 3.3V de l'ESP32</td>
+        </tr>
+        <tr>
+          <td>GND</td>
+          <td><span class="gpio-badge gnd">GND</span></td>
+          <td></td>
+          <td class="desc">Masse commune</td>
+        </tr>
+        <tr>
+          <td>SDA</td>
+          <td><span class="gpio-badge i2c">GPIO 21</span></td>
+          <td>I²C</td>
+          <td class="desc">Bus I²C partagé avec INA219 <span class="note-badge">Adresse 0x44</span></td>
+        </tr>
+        <tr>
+          <td>SCL</td>
+          <td><span class="gpio-badge i2c">GPIO 22</span></td>
+          <td>I²C</td>
+          <td class="desc">Bus I²C partagé avec INA219</td>
+        </tr>
+        <!-- INA219 -->
+        <tr>
+          <td class="name" rowspan="4">INA219<br><small style="font-weight:400;color:#888">Surveillance batterie</small></td>
+          <td>VCC</td>
+          <td><span class="gpio-badge pwr3">3.3V</span></td>
+          <td></td>
+          <td class="desc">Alimentation 3.3V</td>
+        </tr>
+        <tr>
+          <td>GND</td>
+          <td><span class="gpio-badge gnd">GND</span></td>
+          <td></td>
+          <td class="desc">Masse commune</td>
+        </tr>
+        <tr>
+          <td>SDA</td>
+          <td><span class="gpio-badge i2c">GPIO 21</span></td>
+          <td>I²C</td>
+          <td class="desc">Même bus que SHT31 <span class="note-badge">Adresse 0x40</span></td>
+        </tr>
+        <tr>
+          <td>SCL</td>
+          <td><span class="gpio-badge i2c">GPIO 22</span></td>
+          <td>I²C</td>
+          <td class="desc">Même bus que SHT31</td>
+        </tr>
+        <!-- DS18B20 -->
+        <tr>
+          <td class="name" rowspan="3">DS18B20<br><small style="font-weight:400;color:#888">T° externe (1-Wire)</small></td>
+          <td>VCC</td>
+          <td><span class="gpio-badge pwr3">3.3V</span></td>
+          <td></td>
+          <td class="desc">Alimentation 3.3V</td>
+        </tr>
+        <tr>
+          <td>GND</td>
+          <td><span class="gpio-badge gnd">GND</span></td>
+          <td></td>
+          <td class="desc">Masse commune</td>
+        </tr>
+        <tr>
+          <td>DATA</td>
+          <td><span class="gpio-badge gpio">GPIO 4</span></td>
+          <td>1-Wire</td>
+          <td class="desc">Résistance pull-up 4.7 kΩ obligatoire entre DATA et 3.3V <span class="warn-badge">Résistance</span></td>
+        </tr>
+        <!-- ZMPT101B -->
+        <tr>
+          <td class="name" rowspan="3">ZMPT101B<br><small style="font-weight:400;color:#888">Tension secteur AC</small></td>
+          <td>VCC</td>
+          <td><span class="gpio-badge pwr5">5V</span></td>
+          <td></td>
+          <td class="desc">Nécessite 5V (broche VIN du DevKit)</td>
+        </tr>
+        <tr>
+          <td>GND</td>
+          <td><span class="gpio-badge gnd">GND</span></td>
+          <td></td>
+          <td class="desc">Masse commune</td>
+        </tr>
+        <tr>
+          <td>OUT</td>
+          <td><span class="gpio-badge adc">GPIO 34</span></td>
+          <td>ADC</td>
+          <td class="desc">GPIO34 = entrée uniquement (input-only) — parfait pour ADC <span class="note-badge">ADC1_CH6</span></td>
+        </tr>
+        <!-- SIM800L -->
+        <tr>
+          <td class="name" rowspan="4">SIM800L<br><small style="font-weight:400;color:#888">Alertes SMS</small></td>
+          <td>VCC</td>
+          <td><span style="font-size:11px;font-weight:800;color:#C0392B">4.1V dédié</span></td>
+          <td></td>
+          <td class="desc"><strong>NE PAS alimenter depuis l'ESP32</strong> — source dédiée LiPo ou régulateur capable de 2A <span class="warn-badge">CRITIQUE</span></td>
+        </tr>
+        <tr>
+          <td>GND</td>
+          <td><span class="gpio-badge gnd">GND</span></td>
+          <td></td>
+          <td class="desc">Masse commune avec ESP32</td>
+        </tr>
+        <tr>
+          <td>RX</td>
+          <td><span class="gpio-badge uart">GPIO 17 (TX)</span></td>
+          <td>UART2</td>
+          <td class="desc">ESP32 envoie → SIM800L reçoit. Diviseur de tension conseillé <span class="note-badge">3.3V → 2.8V</span></td>
+        </tr>
+        <tr>
+          <td>TX</td>
+          <td><span class="gpio-badge uart">GPIO 16 (RX)</span></td>
+          <td>UART2</td>
+          <td class="desc">SIM800L envoie → ESP32 reçoit. Connexion directe OK</td>
+        </tr>
+        <!-- RELAIS -->
+        <tr>
+          <td class="name" rowspan="5">Module Relais<br><small style="font-weight:400;color:#888">3 canaux 5V</small></td>
+          <td>VCC</td>
+          <td><span class="gpio-badge pwr5">5V</span></td>
+          <td></td>
+          <td class="desc">Alimentation bobine relais 5V (broche VIN)</td>
+        </tr>
+        <tr>
+          <td>GND</td>
+          <td><span class="gpio-badge gnd">GND</span></td>
+          <td></td>
+          <td class="desc">Masse commune</td>
+        </tr>
+        <tr>
+          <td>IN1 — Ventilation</td>
+          <td><span class="gpio-badge relay">GPIO 25</span></td>
+          <td>Sortie numérique</td>
+          <td class="desc">Active LOW — LOW = relais fermé = ventilation ON <span class="note-badge">38°C</span></td>
+        </tr>
+        <tr>
+          <td>IN2 — Délestage</td>
+          <td><span class="gpio-badge relay">GPIO 26</span></td>
+          <td>Sortie numérique</td>
+          <td class="desc">Active LOW — délestage charges non prioritaires <span class="note-badge">52°C</span></td>
+        </tr>
+        <tr>
+          <td>IN3 — Bascule batterie</td>
+          <td><span class="gpio-badge relay">GPIO 27</span></td>
+          <td>Sortie numérique</td>
+          <td class="desc">Active LOW — commutation réseau vers batterie <span class="note-badge">Coupure</span></td>
+        </tr>
+        <!-- Raspberry Pi -->
+        <tr>
+          <td class="name">Raspberry Pi 4<br><small style="font-weight:400;color:#888">Supervision MQTT</small></td>
+          <td>—</td>
+          <td><span style="font-size:11px;font-weight:700;color:#888">WiFi LAN</span></td>
+          <td>MQTT / TCP</td>
+          <td class="desc">Pas de câblage direct — communication WiFi sur réseau local. ESP32 publie sur topics MQTT</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ 3. ALIMENTATION ══ -->
+  <div class="section">
+    <div class="section-title">3. Architecture d'alimentation</div>
+    <div class="power-grid">
+      <div class="power-card">
+        <div class="pwr-title">Rail 3.3V</div>
+        <div class="pwr-volt" style="color:#C0392B">3.3V</div>
+        <div class="pwr-src">Régulateur interne ESP32 DevKit</div>
+        <ul>
+          <li>SHT31 (VCC)</li>
+          <li>DS18B20 (VCC)</li>
+          <li>INA219 (VCC)</li>
+          <li>Pull-up DS18B20 (via 4.7 kΩ)</li>
+        </ul>
+      </div>
+      <div class="power-card">
+        <div class="pwr-title">Rail 5V</div>
+        <div class="pwr-volt" style="color:#C85010">5V</div>
+        <div class="pwr-src">Broche VIN du DevKit (USB ou Buck)</div>
+        <ul>
+          <li>ZMPT101B (VCC)</li>
+          <li>Module relais (VCC)</li>
+        </ul>
+      </div>
+      <div class="power-card" style="border-color:rgba(208,74,40,.3)">
+        <div class="pwr-title">Rail 4.1V — SIM800L</div>
+        <div class="pwr-volt" style="color:var(--warn)">4.1V</div>
+        <div class="pwr-src">Source dédiée obligatoire — LiPo 3.7V ou régulateur</div>
+        <ul>
+          <li>SIM800L uniquement</li>
+          <li>Capacité min 1000 µF en parallèle</li>
+          <li>Courant max : 2A en pic TX</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 4. RÉSISTANCES ══ -->
+  <div class="section">
+    <div class="section-title">4. Résistances et composants passifs requis</div>
+    <table class="pull-table">
+      <thead>
+        <tr>
+          <th>Valeur</th>
+          <th>Utilisation</th>
+          <th>Montage</th>
+          <th>Obligatoire</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>4.7 kΩ</strong></td>
+          <td>Pull-up bus 1-Wire DS18B20</td>
+          <td>Entre GPIO4 et 3.3V</td>
+          <td><span style="color:var(--warn);font-weight:700">Oui</span> — le capteur ne fonctionnera pas sans</td>
+        </tr>
+        <tr>
+          <td><strong>4.7 kΩ × 2</strong></td>
+          <td>Pull-up bus I²C (SDA + SCL)</td>
+          <td>SDA → 3.3V et SCL → 3.3V</td>
+          <td>Souvent déjà sur les modules — vérifier</td>
+        </tr>
+        <tr>
+          <td><strong>1 kΩ + 2 kΩ</strong></td>
+          <td>Diviseur de tension SIM800L RX</td>
+          <td>GPIO17 → 1kΩ → SIM800L RX → 2kΩ → GND</td>
+          <td>Conseillé (3.3V → ~2.2V logique)</td>
+        </tr>
+        <tr>
+          <td><strong>1000 µF / 10V</strong></td>
+          <td>Condensateur SIM800L</td>
+          <td>En parallèle sur l'alimentation SIM800L</td>
+          <td><span style="color:var(--warn);font-weight:700">Oui</span> — absorbe les pics de courant 2A</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ 5. ALERTES ══ -->
+  <div class="section">
+    <div class="section-title">5. Points critiques à ne pas rater</div>
+    <div class="alerts">
+      <div class="alert danger">
+        <strong>SIM800L — Alimentation dédiée obligatoire</strong>
+        Le SIM800L consomme jusqu'à 2A lors de l'émission d'un SMS. Branché sur le 3.3V ou le 5V de l'ESP32, il fera redémarrer le microcontrôleur à chaque envoi de message. Il faut obligatoirement une alimentation externe capable de fournir 2A en pointe, avec un condensateur 1000 µF en parallèle sur les broches VCC/GND du SIM800L.
+      </div>
+      <div class="alert danger">
+        <strong>GPIO34 — Entrée uniquement, pas de pull-up interne</strong>
+        GPIO34, 35, 36 et 39 sur l'ESP32 sont des broches "input-only" — elles n'ont pas de résistance pull-up interne et ne peuvent pas être configurées en sortie. C'est parfait pour l'ADC du ZMPT101B mais ne jamais essayer d'écrire dessus.
+      </div>
+      <div class="alert info">
+        <strong>Bus I²C partagé SHT31 + INA219</strong>
+        Les deux capteurs I²C partagent les mêmes broches GPIO21 (SDA) et GPIO22 (SCL). Ça fonctionne tant que leurs adresses sont différentes : SHT31 à 0x44 et INA219 à 0x40. Vérifier dans le code que les deux bibliothèques n'entrent pas en conflit lors de l'initialisation.
+      </div>
+      <div class="alert info">
+        <strong>Logique relais Active LOW</strong>
+        La plupart des modules relais 5V du commerce fonctionnent en logique inverse : GPIO à LOW = relais fermé (actionneur actif), GPIO à HIGH = relais ouvert (actionneur inactif). Initialiser tous les GPIOs relais à HIGH au démarrage pour éviter une activation intempestive lors du boot de l'ESP32.
+      </div>
+      <div class="alert tip">
+        <strong>GPIO 25, 26, 27 — Bon choix pour les relais</strong>
+        Ces GPIO font partie du bloc RTC et n'ont pas de fonctions spéciales qui pourraient interférer. Sur certains DevKit, GPIO2 et GPIO0 ont des comportements spéciaux au boot. Toujours éviter GPIO0, GPIO2 et GPIO12 pour des sorties critiques.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 6. RÉSUMÉ ══ -->
+  <div class="section">
+    <div class="section-title">6. Résumé des connexions — version rapide</div>
+    <table>
+      <thead>
+        <tr><th>GPIO ESP32</th><th>Rôle</th><th>Composant</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="gpio-badge gpio">GPIO 4</span></td><td>1-Wire DATA</td><td>DS18B20</td></tr>
+        <tr><td><span class="gpio-badge i2c">GPIO 21 (SDA)</span></td><td>I²C Data</td><td>SHT31 + INA219</td></tr>
+        <tr><td><span class="gpio-badge i2c">GPIO 22 (SCL)</span></td><td>I²C Clock</td><td>SHT31 + INA219</td></tr>
+        <tr><td><span class="gpio-badge adc">GPIO 34</span></td><td>ADC entrée analogique</td><td>ZMPT101B</td></tr>
+        <tr><td><span class="gpio-badge uart">GPIO 16 (RX)</span></td><td>UART2 Reçoit</td><td>SIM800L TX</td></tr>
+        <tr><td><span class="gpio-badge uart">GPIO 17 (TX)</span></td><td>UART2 Envoie</td><td>SIM800L RX</td></tr>
+        <tr><td><span class="gpio-badge relay">GPIO 25</span></td><td>Relais 1 — Ventilation (38°C)</td><td>IN1 module relais</td></tr>
+        <tr><td><span class="gpio-badge relay">GPIO 26</span></td><td>Relais 2 — Délestage (52°C)</td><td>IN2 module relais</td></tr>
+        <tr><td><span class="gpio-badge relay">GPIO 27</span></td><td>Relais 3 — Bascule batterie</td><td>IN3 module relais</td></tr>
+        <tr><td><span class="gpio-badge pwr3">3.3V</span></td><td>Alimentation capteurs</td><td>SHT31, DS18B20, INA219</td></tr>
+        <tr><td><span class="gpio-badge pwr5">5V (VIN)</span></td><td>Alimentation actionneurs</td><td>ZMPT101B, Module relais</td></tr>
+        <tr><td><span class="gpio-badge gnd">GND</span></td><td>Masse commune</td><td>Tous les composants</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  SAHEL SMART SHIELD — SSS-Lite &nbsp;·&nbsp; Schéma de câblage v1.0 &nbsp;·&nbsp; github.com/SerenaPTD/sahel-smart-shield
+</footer>
+</body>
+</html>
