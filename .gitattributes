@@ -1,0 +1,9 @@
+# Schemas de cablage : documentation, pas du code applicatif
+hardware/*.html linguist-documentation=true
+
+# Structured Text IEC 61131-3 : GitHub ne connait pas ce langage et
+# identifie les fichiers .st comme du Smalltalk. On les retire des statistiques.
+*.st linguist-detectable=false
+
+# En-tetes du firmware ESP32 : C++, pas C
+firmware/sss-firmware/src/*.h linguist-language=C++
